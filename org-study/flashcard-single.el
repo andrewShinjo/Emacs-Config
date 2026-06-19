@@ -1,11 +1,15 @@
 ;;; flashcard-single.el
 
 (defconst SINGLE-DELIMITER " :-> ")
+(defconst SINGLE-TAG "single")
 
 (defconst SINGLE-DUE-PROPERTY "SINGLE_DUE")
 (defconst SINGLE-INTERVAL-PROPERTY "SINGLE_INTERVAL")
 (defconst SINGLE-EASE-FACTOR-PROPERTY "SINGLE_EASE_FACTOR")
 (defconst SINGLE-REPETITION-PROPERTY "SINGLE_REPETITION")
+
+(defun andy/org-study/flashcard-single/is-flashcard(text tags)
+  (member SINGLE-TAG tags))
 
 (defun andy/org-study/flashcard-single/save (flashcard)
   (let ((due (plist-get flashcard :due))

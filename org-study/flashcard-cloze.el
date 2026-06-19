@@ -5,6 +5,9 @@
 (defconst CLOZE-EASE-FACTOR-PROPERTY-PREFIX "CLOZE_EASE_FACTOR_")
 (defconst CLOZE-REPETITION-PROPERTY-PREFIX "CLOZE_REPETITION_")
 
+(defun andy/org-study/flashcard-cloze/is-flashcard (text tags)
+  (string-match-p "\\*[^*]+\\*" text))
+
 (defun andy/org-study/flashcard-cloze/save ()
   (let ((suffix (number-to-string (plist-get flashcard :cloze-idx))))
     (org-entry-put (point) (concat CLOZE-DUE-PROPERTY-PREFIX suffix) due)

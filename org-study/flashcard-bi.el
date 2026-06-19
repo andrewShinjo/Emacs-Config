@@ -1,6 +1,7 @@
 ;;; flashcard-bi.el
 
 (defconst BI-DELIMITER " :<-> ")
+(defconst BI-TAG "bi")
 
 (defconst BI-DUE-FORWARD-PROPERTY "BI_FORWARD_DUE")
 (defconst BI-INTERVAL-FORWARD-PROPERTY "BI_INTERVAL_FORWARD")
@@ -10,6 +11,9 @@
 (defconst BI-INTERVAL-REVERSE-PROPERTY "BI_INTERVAL_REVERSE")
 (defconst BI-EASE-FACTOR-REVERSE-PROPERTY "BI_EASE_FACTOR_REVERSE")
 (defconst BI-REPETITION-REVERSE-PROPERTY "BI_REPETITION_REVERSE")
+
+(defun andy/org-study/flashcard-bi/is-flashcard (text tags)
+  (member BI-TAG tags))
 
 (defun andy/org-study/flashcard-bi/save () nil)
 

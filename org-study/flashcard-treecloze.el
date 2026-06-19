@@ -6,6 +6,9 @@
 (defconst TREECLOZE-REPETITION-PROPERTY-PREFIX "TREECLOZE_REPETITION_")
 (defconst TREECLOZE-TAG "treecloze")
 
+(defun andy/org-study/flashcard-treecloze/is-flashcard (text tags)
+  (member TREECLOZE-TAG tags))
+
 (defun andy/org-study/flashcard-treecloze/save ()
   (let ((suffix (number-to-string (plist-get flashcard :cloze-idx))))
     (org-entry-put (point) (concat TREECLOZE-DUE-PROPERTY-PREFIX suffix) due)
