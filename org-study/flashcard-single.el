@@ -1,5 +1,7 @@
 ;;; flashcard-single.el
 
+(require 'org-heading-at-point)
+
 (defconst SINGLE-DELIMITER " :-> ")
 (defconst SINGLE-TAG "single")
 
@@ -22,9 +24,6 @@
     (org-entry-put (point) SINGLE-INTERVAL-PROPERTY (number-to-string interval))))
 
 (defun andy/org-study/flashcard-single/parse (org-file now)
-
-  (message "Now: %s" now)
-
   (let* (
 	 (heading-text (org-get-heading 'no-todo 'no-tags))
 	 (body-text (andy/org-heading-at-point/get-body-text))
@@ -34,7 +33,6 @@
 	 (interval (string-to-number (or (org-entry-get nil SINGLE-INTERVAL-PROPERTY) "0")))
 	 (due (org-entry-get nil SINGLE-DUE-PROPERTY))
 	 (is-due (or (not due) (time-less-p (org-time-string-to-time due) now))))
-
     (if is-due
 	(list
 	 :org-file org-file

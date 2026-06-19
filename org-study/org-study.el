@@ -120,30 +120,9 @@
 		 (when result
 		   (push result all-flashcards)))) 	 
               ((eq type 'BI)
-               (let* ((text (org-get-heading 'no-todo 'no-tags))
-                      (tokens (string-split text BI-DELIMITER)))
-                 (let* ((f-due (org-entry-get nil BI-DUE-FORWARD-PROPERTY))
-                        (is-f (or (not f-due) (time-less-p (date-to-time f-due) now))))
-                   (when is-f
-                     (push (list :org-file org-file :ID ID 
-                                 :question (concat context "\n" (make-string level ?*) " " (nth 0 tokens))
-                                 :answer (or (nth 1 tokens) "No answer") :due (or f-due "")
-                                 :repetition (string-to-number (or (org-entry-get nil BI-REPETITION-FORWARD-PROPERTY) "0"))
-                                 :ease-factor (string-to-number (or (org-entry-get nil BI-EASE-FACTOR-FORWARD-PROPERTY) "2.5"))
-                                 :interval (string-to-number (or (org-entry-get nil BI-INTERVAL-FORWARD-PROPERTY) "0"))
-                                 :type 'BI :bi-type 'FORWARD)
-                           heading-flashcards)))
-                 (let* ((r-due (org-entry-get nil BI-DUE-REVERSE-PROPERTY))
-                        (is-r (or (not r-due) (time-less-p (date-to-time r-due) now))))
-                   (when is-r
-                     (push (list :org-file org-file :ID ID 
-                                 :question (concat context "\n" (make-string level ?*) " " (nth 1 tokens))
-                                 :answer (or (nth 0 tokens) "No answer") :due (or r-due "")
-                                 :repetition (string-to-number (or (org-entry-get nil BI-REPETITION-REVERSE-PROPERTY) "0"))
-                                 :ease-factor (string-to-number (or (org-entry-get nil BI-EASE-FACTOR-REVERSE-PROPERTY) "2.5"))
-                                 :interval (string-to-number (or (org-entry-get nil BI-INTERVAL-REVERSE-PROPERTY) "0"))
-                                 :type 'BI :bi-type 'REVERSE)
-                           heading-flashcards)))))
+	       (let ((result (andy/org-study/flashcard-bi/parse org-file now)))
+		 (when result
+		   (push result all-flashcards))))	       
               ((eq type 'CLOZE)
                (let* ((text  (org-get-heading 'no-todo 'no-tags))
                       (answers '()) (start 0))
