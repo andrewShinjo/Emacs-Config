@@ -124,25 +124,9 @@
 		 (when result
 		   (push result all-flashcards))))	       
               ((eq type 'CLOZE)
-               (let* ((text  (org-get-heading 'no-todo 'no-tags))
-                      (answers '()) (start 0))
-                 (while (string-match "\\*\\([^*]+\\)\\*" text start)
-                   (push (match-string 1 text) answers)
-                   (setq start (match-end 0)))
-                 (setq answers (nreverse answers))
-                 (dotimes (i (length answers))
-                   (let* ((suffix (number-to-string i))
-                          (due (org-entry-get nil (concat CLOZE-DUE-PROPERTY-PREFIX suffix)))
-                          (is-due (or (not due) (time-less-p (date-to-time due) now))))
-                     (when is-due
-                       (push (list :org-file org-file :ID ID
-                                   :question (concat context "\n" (make-string level ?*) " " (andy/org-study/make-cloze-question text i))
-                                   :answer (nth i answers) :due (or due "")
-                                   :repetition (string-to-number (or (org-entry-get nil (concat CLOZE-REPETITION-PROPERTY-PREFIX suffix)) "0"))
-                                   :ease-factor (string-to-number (or (org-entry-get nil (concat CLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix)) "2.5"))
-                                   :interval (string-to-number (or (org-entry-get nil (concat CLOZE-INTERVAL-PROPERTY-PREFIX suffix)) "0"))
-                                   :type 'CLOZE :cloze-idx i)
-                             heading-flashcards))))))
+               (let ((result (andy/org-study/flashcard-cloze/parse org-file now)))
+		 (when result
+		   (push result all-flashcards))))
               ((eq type 'TREECLOZE)
                (let* ((parent  (org-get-heading 'no-todo 'no-tags))
                       (children-data '()))
