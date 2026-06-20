@@ -17,7 +17,22 @@
 (defun andy/org-study/flashcard-bi/is-flashcard (text tags)
   (member BI-TAG tags))
 
-(defun andy/org-study/flashcard-bi/save (flashcard) nil)
+(defun andy/org-study/flashcard-bi/save (flashcard)
+  (let ((due (plist-get flashcard :due))
+        (repetition (plist-get flashcard :repetition))
+        (ease-factor (plist-get flashcard :ease-factor))
+        (interval (plist-get flashcard :interval))
+        (bi-type (plist-get flashcard :bi-type)))
+    (if (eq bi-type 'FORWARD)
+        (progn
+          (org-entry-put (point) BI-DUE-FORWARD-PROPERTY due)
+          (org-entry-put (point) BI-REPETITION-FORWARD-PROPERTY (number-to-string repetition))
+          (org-entry-put (point) BI-EASE-FACTOR-FORWARD-PROPERTY (format "%.2f" ease-factor))
+          (org-entry-put (point) BI-INTERVAL-FORWARD-PROPERTY (number-to-string interval)))
+      (org-entry-put (point) BI-DUE-REVERSE-PROPERTY due)
+      (org-entry-put (point) BI-REPETITION-REVERSE-PROPERTY (number-to-string repetition))
+      (org-entry-put (point) BI-EASE-FACTOR-REVERSE-PROPERTY (format "%.2f" ease-factor))
+      (org-entry-put (point) BI-INTERVAL-REVERSE-PROPERTY (number-to-string interval)))))
 
 (defun andy/org-study/flashcard-bi/parse (org-file now)
 

@@ -122,9 +122,9 @@
   (let ((types (andy/org-study/get-flashcard-types-on-heading-at-point)))
     (when types
       (let* ((text (org-get-heading 'no-todo 'no-tags))
-             (new-hash (number-to-string (sxhash text)))
+             (new-hash (secure-hash 'sha256 text))
              (old-hash (org-entry-get nil HASH-PROPERTY))
-             (new-tree-hash (number-to-string (sxhash (andy/org-study/serialize-child-headings))))
+             (new-tree-hash (secure-hash 'sha256 (andy/org-study/serialize-child-headings)))
              (old-tree-hash (org-entry-get nil TREECLOZE-HASH-PROPERTY)))
         (when (not (equal new-hash old-hash))
           (dolist (p (list SINGLE-DUE-PROPERTY SINGLE-INTERVAL-PROPERTY SINGLE-EASE-FACTOR-PROPERTY SINGLE-REPETITION-PROPERTY
