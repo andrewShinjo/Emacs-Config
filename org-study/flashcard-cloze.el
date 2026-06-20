@@ -11,7 +11,11 @@
   (string-match-p CLOZE-REGEX text))
 
 (defun andy/org-study/flashcard-cloze/save (flashcard)
-  (let ((suffix (number-to-string (plist-get flashcard :cloze-idx))))
+  (let ((suffix (number-to-string (plist-get flashcard :cloze-idx)))
+        (due (plist-get flashcard :due))
+        (repetition (plist-get flashcard :repetition))
+        (ease-factor (plist-get flashcard :ease-factor))
+        (interval (plist-get flashcard :interval)))
     (org-entry-put (point) (concat CLOZE-DUE-PROPERTY-PREFIX suffix) due)
     (org-entry-put (point) (concat CLOZE-REPETITION-PROPERTY-PREFIX suffix) (number-to-string repetition))
     (org-entry-put (point) (concat CLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix) (format "%.2f" ease-factor))
@@ -64,5 +68,13 @@
 	CLOZE-INTERVAL-PROPERTY-PREFIX
 	CLOZE-EASE-FACTOR-PROPERTY-PREFIX
 	CLOZE-REPETITION-PROPERTY-PREFIX))
+
+(defun andy/org-study/make-cloze-question (text target-idx)
+  (let ((idx 0) (result text))
+    (while (string-match "\\*\\([^*]+\\)\\*" result)
+      (if (= idx target-idx) (setq result (replace-match "[...]" t t result))
+        (setq result (replace-match (match-string 1 result) t t result)))
+      (setq idx (1+ idx)))
+    result))
 
 (provide 'flashcard-cloze)

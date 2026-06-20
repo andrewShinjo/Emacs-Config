@@ -17,13 +17,13 @@
 (defun andy/org-study/flashcard-bi/is-flashcard (text tags)
   (member BI-TAG tags))
 
-(defun andy/org-study/flashcard-bi/save () nil)
+(defun andy/org-study/flashcard-bi/save (flashcard) nil)
 
 (defun andy/org-study/flashcard-bi/parse (org-file now)
 
   (let* (
 	 (heading-text (org-get-heading 'no-todo 'no-tags))
-	 (body-text (andy/org-heading-at-point-get-body-text))
+	 (body-text (andy/org-heading-at-point/get-body-text))
 	 (ID (org-entry-get nil "ID"))
 	 (forward-repetition (string-to-number (or (org-entry-get nil BI-REPETITION-FORWARD-PROPERTY) "0")))
 	 (forward-ease-factor (string-to-number (or (org-entry-get nil BI-EASE-FACTOR-FORWARD-PROPERTY) "2.5")))

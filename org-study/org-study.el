@@ -64,14 +64,13 @@
   (interactive)
   (let ((flashcard (car due-flashcards)))
     (setcar due-flashcards (andy/org-study/update-card-sm2 flashcard 1))
-    (andy/org-study/flashcard-save)
+    (andy/org-study/flashcard/save)
     (pop due-flashcards)
     (andy/org-study/display-flashcard-question)))
 
 ;;; --- Core SRS Logic ---
 
 (defun andy/org-study/shuffle-list (list)
-  "Returns a new list with elements of LIST in random order. Uses Fisher-Yates shuffle algorithm. Preserves all elements."
   (let ((vec (vconcat list))
         (len (length list)))
     (dotimes (i len)
@@ -103,73 +102,21 @@
 
 (defun andy/org-study/get-flashcards-in-org-file (org-file)
   (with-current-buffer (find-file-noselect org-file)
-    (let (
-	  (all-flashcards '())
-	  (now (current-time)))
+    (let ((all-flashcards '())
+          (now (current-time)))
       (org-map-entries
        (lambda ()
-         (let ((flashcard-types (andy/org-study/get-flashcard-types-on-heading-at-point))
-               (heading-flashcards '())
-               (context (andy/org-study/get-question-context-at-point))
-               (level (org-outline-level))
-               (ID (org-entry-get nil "ID")))
-           (dolist (type flashcard-types)
-             (cond
-              ((eq type 'SINGLE)
-	       (let ((result (andy/org-study/flashcard-single/parse org-file now)))
-		 (when result
-		   (push result all-flashcards)))) 	 
-              ((eq type 'BI)
-	       (let ((result (andy/org-study/flashcard-bi/parse org-file now)))
-		 (when result
-		   (push result all-flashcards))))	       
-              ((eq type 'CLOZE)
-               (let ((result (andy/org-study/flashcard-cloze/parse org-file now)))
-		 (when result
-		   (push result all-flashcards))))
-              ((eq type 'TREECLOZE)
-               (let* ((parent  (org-get-heading 'no-todo 'no-tags))
-                      (children-data '()))
-                 (save-excursion
-                   (when (org-goto-first-child)
-                     (push (list :title (org-get-heading 'no-todo 'no-tags)
-                                 :body (andy/org-heading-at-point/get-body-text)) children-data)
-                     (while (org-get-next-sibling)
-                       (push (list :title (org-get-heading 'no-todo 'no-tags)
-                                   :body (andy/org-heading-at-point/get-body-text)) children-data))))
-                 (setq children-data (nreverse children-data))
-                 (dotimes (i (length children-data))
-                   (let* ((suffix (number-to-string i))
-                          (due (org-entry-get nil (concat TREECLOZE-DUE-PROPERTY-PREFIX suffix)))
-                          (is-due (or (not due) (time-less-p (date-to-time due) now))))
-                     (when is-due
-                       (let ((q-lines '()) (target-child (nth i children-data)))
-                         (dotimes (j (length children-data))
-                           (let* ((child (nth j children-data))
-                                  (is-target (= i j))
-                                  (display-title (if is-target "[...]" (plist-get child :title)))
-                                  (display-body (if is-target "" (let ((b (plist-get child :body))) (if (string-empty-p b) "" (concat "\n" b))))))
-                             (push (format "%s %s%s" (make-string (1+ level) ?*) display-title display-body) q-lines)))
-                         (push (list :org-file org-file :ID ID
-                                     :question (concat context "\n" (make-string level ?*) " " parent "\n" (mapconcat #'identity (nreverse q-lines) "\n"))
-                                     :answer (concat (plist-get target-child :title) "\n\n" (plist-get target-child :body))
-                                     :due (or due "")
-                                     :repetition (string-to-number (or (org-entry-get nil (concat TREECLOZE-REPETITION-PROPERTY-PREFIX suffix)) "0"))
-                                     :ease-factor (string-to-number (or (org-entry-get nil (concat TREECLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix)) "2.5"))
-                                     :interval (string-to-number (or (org-entry-get nil (concat TREECLOZE-INTERVAL-PROPERTY-PREFIX suffix)) "0"))
-                                     :type 'TREECLOZE :cloze-idx i)
-                               heading-flashcards)))))))))
-           (setq all-flashcards (append all-flashcards heading-flashcards))))
+         (let ((types (andy/org-study/get-flashcard-types-on-heading-at-point)))
+           (dolist (type types)
+             (when-let ((parse-fn (org-study--get-handler type :parse)))
+               (let ((result (funcall parse-fn org-file now)))
+                 (when result
+                   (if (keywordp (car result))
+                       (push result all-flashcards)
+                     (setq all-flashcards
+                           (nconc (cl-copy-list result) all-flashcards)))))))))
        nil 'file)
       (nreverse all-flashcards))))
-
-(defun andy/org-study/make-cloze-question (text target-idx)
-  (let ((idx 0) (result text))
-    (while (string-match "\\*\\([^*]+\\)\\*" result)
-      (if (= idx target-idx) (setq result (replace-match "[...]" t t result))
-        (setq result (replace-match (match-string 1 result) t t result)))
-      (setq idx (1+ idx)))
-    result))
 
 (defun andy/org-study/delete-properties ()
   (let ((types (andy/org-study/get-flashcard-types-on-heading-at-point)))
@@ -251,24 +198,9 @@
 
 ;; --- Helper Functions ---
 
-(defun andy/org-heading-at-point/get-body-text ()
-  (save-excursion
-    (org-back-to-heading t) (org-end-of-meta-data t)
-    (let ((lines '()))
-      (while (and (not (eobp)) (not (looking-at "^\\*+ ")))
-        (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
-        (forward-line 1))
-      (string-trim (mapconcat #'identity (nreverse lines) "\n")))))
-
 (defun andy/org-file/get-all-org-files-from-directory-recursively (dir)
   (let ((files (directory-files-recursively dir "\\.org$")))
     (cl-remove-if (lambda (f) (string-match-p "/\\.#\\|/#\\|~$\\|^\\." (file-name-nondirectory f))) files)))
 
-(defun andy/org-study/get-question-context-at-point ()
-  (save-excursion
-    (let (ctx)
-      (while (org-up-heading-safe)
-        (push (concat (make-string (org-outline-level) ?*) " " (org-get-heading 'no-todo 'no-tags) "\n\n" (andy/org-heading-at-point/get-body-text)) ctx))
-      (mapconcat #'identity ctx "\n"))))
 
 (provide 'org-study)
