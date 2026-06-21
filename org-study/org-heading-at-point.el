@@ -20,10 +20,27 @@
     types))
 
 (defun andy/org-study/get-question-context-at-point ()
+  (message "get-question-context-at-point")
   (save-excursion
-    (let (ctx)
+    (let ((ctx nil))
+      (when-let ((title (andy/org-study/get-title-at-point)))
+        (push (format "#+title: %s" title) ctx)
+        (push "" ctx))
       (while (org-up-heading-safe)
-        (push (concat (make-string (org-outline-level) ?*) " " (org-get-heading 'no-todo 'no-tags) "\n\n" (andy/org-heading-at-point/get-body-text)) ctx))
-      (mapconcat #'identity ctx "\n"))))
+        (push (concat
+               (make-string (org-outline-level) ?*)
+               " "
+               (org-get-heading 'no-todo 'no-tags)
+               "\n"
+               (andy/org-heading-at-point/get-body-text))
+              ctx))
+      (string-join (reverse ctx) "\n"))))
+
+(defun andy/org-study/get-title-at-point ()
+  (save-excursion
+    (goto-char (point-min))
+    (let ((case-fold-search t))
+      (when (re-search-forward "^[ \t]*#\\+title:[ \t]*\\(.*\\)$" nil t)
+        (string-trim (match-string 1))))))
 
 (provide 'org-heading-at-point)

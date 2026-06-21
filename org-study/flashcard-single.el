@@ -27,6 +27,9 @@
   (let* (
 	 (heading-text (org-get-heading 'no-todo 'no-tags))
 	 (body-text (andy/org-heading-at-point/get-body-text))
+	 (context (andy/org-study/get-question-context-at-point))
+	 (level (org-outline-level))
+	 (question (concat context "\n" (make-string level ?*) " " heading-text))
 	 (ID (org-entry-get nil "ID"))
 	 (repetition (string-to-number (or (org-entry-get nil SINGLE-REPETITION-PROPERTY) "0")))
 	 (ease-factor (string-to-number (or (org-entry-get nil SINGLE-EASE-FACTOR-PROPERTY) "2.5")))
@@ -37,7 +40,7 @@
 	(list
 	 :org-file org-file
 	 :ID ID
-	 :question heading-text
+	 :question question
 	 :answer body-text
 	 :repetition repetition
 	 :ease-factor ease-factor
