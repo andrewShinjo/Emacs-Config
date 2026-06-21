@@ -25,16 +25,14 @@
 (global-visual-line-mode 1)
 (tool-bar-mode -1)
 
+(set-face-attribute 'default nil :height 180)
 (set-frame-parameter nil 'fullscreen 'maximized)
 
 ;;; Org mode
-
+(setq org-format-latex-options 
+      (plist-put org-format-latex-options :scale 1.5))
 (setq org-directory (expand-file-name "~/Documents/Org"))
 
-;;; Org Roam
-
-(setq org-roam-directory org-directory)
-(org-roam-db-autosync-mode)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -47,3 +45,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+;;; Org Roam
+
+(setq org-roam-directory org-directory)
+(org-roam-db-autosync-mode)

@@ -1,6 +1,6 @@
 ;;; flashcard-cloze.el
 
-(defconst CLOZE-REGEX "\\*[^*]+\\*")
+(defconst CLOZE-REGEX "\\*\\([^*]+\\)\\*")
 
 (defconst CLOZE-DUE-PROPERTY-PREFIX "CLOZE_DUE_")
 (defconst CLOZE-INTERVAL-PROPERTY-PREFIX "CLOZE_INTERVAL_")
