@@ -32,7 +32,7 @@
                " "
                (org-get-heading 'no-todo 'no-tags)
                "\n"
-               (andy/org-heading-at-point/get-body-text))
+               (andy/org-study/expand-attachment-links (andy/org-heading-at-point/get-body-text)))
               ctx))
       (string-join (reverse ctx) "\n"))))
 

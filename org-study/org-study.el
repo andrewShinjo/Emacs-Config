@@ -5,6 +5,7 @@
 (require 'flashcard-single)
 (require 'org-element)
 (require 'org-heading-at-point)
+(require 'org-attach)
 
 ;; --- Constants for SM2 Properties ---
 (defconst HASH-PROPERTY "HASH")
@@ -151,6 +152,22 @@
 	(push (org-get-heading 'no-todo 'no-tags) children) (while (org-get-next-sibling) (push (org-get-heading 'no-todo 'no-tags) children)))) (mapconcat #'identity (sort children #'string<) " | ")))
 
 
+(defun andy/org-study/expand-attachment-links (text)
+  "Expand [[attachment:FILE]] links in TEXT to [[file:ABSOLUTE-PATH]].
+Must be called from the original org buffer with point at the heading."
+  (save-match-data
+    (if (not (string-match-p "\\[\\[attachment:" text))
+        text
+      (let ((attach-dir (org-attach-dir)))
+        (if (null attach-dir)
+            text
+          (replace-regexp-in-string
+           "\\[\\[attachment:\\(.*?\\)\\]\\]"
+           (lambda (match)
+             (format "[[file:%s]]"
+                     (expand-file-name (match-string 1 match) attach-dir)))
+           text))))))
+
 (defun andy/org-study/show-answer ()
   "Reveals the answer in the flashcard buffer, bypassing read-only mode."
   (interactive)
@@ -160,7 +177,8 @@
         (goto-char (point-max))
         (insert "\n\n" (make-string 30 ?-) "\n" "**Answer:**\n" 
                 (or (plist-get (car due-flashcards) :answer) "No answer found."))
-        (insert "\n\n" "Easy [e], Hard [h], Forgot [f] | Mark Edit-Later [E]")))))
+        (insert "\n\n" "Easy [e], Hard [h], Forgot [f] | Mark Edit-Later [E]")
+        (org-display-inline-images t t)))))
 
 (defun andy/org-study/display-flashcard-question ()
   "Displays the next question, ensuring the buffer is cleared correctly."
@@ -174,7 +192,8 @@
             (insert "Done with flashcards.")
           (insert (format "Flashcards remaining: %d\n\n" (length due-flashcards)))
           (insert (plist-get flashcard :question))
-          (insert "\n\n" "Show answer: [SPC]"))))
+          (insert "\n\n" "Show answer: [SPC]")
+          (org-display-inline-images t t))))
     (switch-to-buffer buf)))
 
 (defun andy/org-study/start-study ()

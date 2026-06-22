@@ -43,13 +43,14 @@
           (push (list
                  :org-file org-file
                  :ID ID
-                 :question (concat
-			    context
-			    "\n"
-			    (make-string level ?*)
-			    " "
-			    (andy/org-study/make-cloze-question text i))
-                 :answer (nth i answers)
+                  :question (andy/org-study/expand-attachment-links
+			    (concat
+			     context
+			     "\n"
+			     (make-string level ?*)
+			     " "
+			     (andy/org-study/make-cloze-question text i)))
+                 :answer (andy/org-study/expand-attachment-links (nth i answers))
                  :due (or due "")
                  :repetition (string-to-number
 			      (or (org-entry-get nil (concat CLOZE-REPETITION-PROPERTY-PREFIX suffix)) "0"))

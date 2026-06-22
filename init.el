@@ -50,3 +50,7 @@
 
 (setq org-roam-directory org-directory)
 (org-roam-db-autosync-mode)
+
+;;; Keybindings
+
+(global-set-key (kbd "s-o") 'org-roam-node-find)

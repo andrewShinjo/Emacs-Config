@@ -57,10 +57,10 @@
                                  "\n\n"
                                  (plist-get target :body))))
             (push (list
-		   :org-file org-file
+ 		   :org-file org-file
                    :ID id
-                   :question question
-                   :answer answer
+                   :question (andy/org-study/expand-attachment-links question)
+                   :answer (andy/org-study/expand-attachment-links answer)
                    :due (or due "")
                    :repetition (string-to-number
                                 (or (org-entry-get nil (concat TREECLOZE-REPETITION-PROPERTY-PREFIX suffix))
@@ -88,12 +88,12 @@
       (let (result)
 	(push (list
 	       :title (org-get-heading 'no-todo 'no-tags)
-	       :body (andy/org-heading-at-point/get-body-text))
+	       :body (andy/org-study/expand-attachment-links (andy/org-heading-at-point/get-body-text)))
 	      result)
 	(while (org-get-next-sibling)
 	  (push (list
 		 :title (org-get-heading 'no-todo 'no-tags)
-		 :body (andy/org-heading-at-point/get-body-text))
+		 :body (andy/org-study/expand-attachment-links (andy/org-heading-at-point/get-body-text)))
 		result))
 	(nreverse result)))))
 
