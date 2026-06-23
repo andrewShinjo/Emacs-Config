@@ -166,7 +166,16 @@ Must be called from the original org buffer with point at the heading."
            (lambda (match)
              (format "[[file:%s]]"
                      (expand-file-name (match-string 1 match) attach-dir)))
-           text))))))
+            text))))))
+
+(defun andy/org-study/preview-latex ()
+  "Preview LaTeX fragments in the current buffer.
+Works with both org 9.6+ (`org-latex-preview') and older (`org-preview-latex-fragment')."
+  (when (display-graphic-p)
+    (cond ((fboundp 'org-latex-preview)
+           (org-latex-preview '(16)))
+          ((fboundp 'org-preview-latex-fragment)
+           (org-preview-latex-fragment '(16))))))
 
 (defun andy/org-study/show-answer ()
   "Reveals the answer in the flashcard buffer, bypassing read-only mode."
@@ -178,7 +187,8 @@ Must be called from the original org buffer with point at the heading."
         (insert "\n\n" (make-string 30 ?-) "\n" "**Answer:**\n" 
                 (or (plist-get (car due-flashcards) :answer) "No answer found."))
         (insert "\n\n" "Easy [e], Hard [h], Forgot [f] | Mark Edit-Later [E]")
-        (org-display-inline-images t t)))))
+        (org-display-inline-images t t)
+        (andy/org-study/preview-latex)))))
 
 (defun andy/org-study/display-flashcard-question ()
   "Displays the next question, ensuring the buffer is cleared correctly."
@@ -193,7 +203,8 @@ Must be called from the original org buffer with point at the heading."
           (insert (format "Flashcards remaining: %d\n\n" (length due-flashcards)))
           (insert (plist-get flashcard :question))
           (insert "\n\n" "Show answer: [SPC]")
-          (org-display-inline-images t t))))
+          (org-display-inline-images t t)
+          (andy/org-study/preview-latex))))
     (switch-to-buffer buf)))
 
 (defun andy/org-study/start-study ()
