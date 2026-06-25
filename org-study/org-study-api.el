@@ -4,8 +4,9 @@
 (require 'org-element)
 (require 'seq)
 (require 'subr-x)
-(require 'vtable)
+(require 'file-api)
 (require 'org-study)
+(require 'vtable)
 
 (defconst BUFFER-NAME "*ORG-STUDY*")
 (defconst ID-PROPERTY "ID")
@@ -15,12 +16,15 @@
 
 (defalias 'org-study/start-study 'andy/org-study/start-study)
 
-(defun org-study/review-notes ()
+(defun andy/org-study/review-notes ()
   
   (interactive)
 
   (let* (
-	 (all-files (directory-files-recursively org-directory ORG-FILE-REGEX))
+	 (all-files (andy/file-api/get-files
+		     org-directory
+		     :file-extensions '("org")
+		     :recursive t))
 
 	 ;; Get all headings
          (all-headings
