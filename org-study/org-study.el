@@ -101,6 +101,18 @@
 									      (days-to-time interval))))
       new-card)))
 
+(defun andy/org-study/compute-next-due (flashcard quality)
+  (let ((repetition (plist-get flashcard :repetition))
+        (interval (plist-get flashcard :interval))
+        (ease-factor (plist-get flashcard :ease-factor)))
+    (if (>= quality 3)
+        (cond ((= repetition 0) (setq interval 1))
+              ((= repetition 1) (setq interval 6))
+              (t (setq interval (round (* interval ease-factor)))))
+      (setq interval 1))
+    (format-time-string "%Y-%m-%d"
+                        (time-add (current-time) (days-to-time interval)))))
+
 (defun andy/org-study/get-flashcards-in-org-file (org-file)
   (with-current-buffer (find-file-noselect org-file)
     (let ((all-flashcards '())
@@ -186,7 +198,15 @@ Works with both org 9.6+ (`org-latex-preview') and older (`org-preview-latex-fra
         (goto-char (point-max))
         (insert "\n\n" (make-string 30 ?-) "\n" "**Answer:**\n" 
                 (or (plist-get (car due-flashcards) :answer) "No answer found."))
-        (insert "\n\n" "Easy [e], Hard [h], Forgot [f] | Mark Edit-Later [E]")
+        (let* ((card (car due-flashcards))
+               (easy-date (andy/org-study/compute-next-due card 5))
+               (hard-date (andy/org-study/compute-next-due card 3))
+               (forgot-date (andy/org-study/compute-next-due card 1)))
+          (insert "\n\n")
+          (insert (format "[e] Easy (%s)\n" easy-date))
+          (insert (format "[h] Hard (%s)\n" hard-date))
+          (insert (format "[f] Forgot (%s)\n" forgot-date))
+          (insert "[E] Mark Edit-Later"))
         (org-display-inline-images t t)
         (andy/org-study/preview-latex)))))
 
