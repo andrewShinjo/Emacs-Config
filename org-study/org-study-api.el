@@ -14,6 +14,11 @@
 (defconst REVIEW-DUE-PROPERTY "REVIEW_DUE")
 (defconst REVIEW-INCREMENT-PROPERTY "REVIEW_INCREMENT")
 
+(defconst REVIEW-TAGS '(
+			"article"
+			"edit-later"
+			"extract"))
+
 (defalias 'org-study/start-study 'andy/org-study/start-study)
 
 (defun andy/org-study/review-notes ()
@@ -25,18 +30,15 @@
 		     org-directory
 		     :file-extensions '("org")
 		     :recursive t))
-
-	 ;; Get all headings
          (all-headings
           (cl-mapcan
            (lambda (org-file)
              (with-current-buffer (find-file-noselect org-file)
                (org-map-entries
                 (lambda ()
-
 		  (let* ((current-tags (org-get-tags nil t))
 			 (id (if (cl-some (lambda (tag)
-					    (member tag '("article" "extract" "edit-later")))
+					    (member tag REVIEW-TAGS))
 					  current-tags)
 				 (org-id-get (point) 'create)
 			       (org-id-get (point))))))
