@@ -49,8 +49,7 @@
   
   (interactive)
 
-  (let* (
-	 (all-files (andy/file-api/get-files
+  (let* ((all-files (andy/file-api/get-files
 		     org-directory
 		     :file-extensions '("org")
 		     :recursive t))
@@ -73,7 +72,7 @@
                    :review-due review-due
 		   :review-increment review-increment
                    :tags tags))
-		(string-join REVIEW-TAGS "|") 'file)))
+		t 'file (string-join REVIEW-TAGS "|"))))
            all-files)))
 
          (headings-filtered-by-due

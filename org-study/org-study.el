@@ -181,8 +181,6 @@ Must be called from the original org buffer with point at the heading."
             text))))))
 
 (defun andy/org-study/preview-latex ()
-  "Preview LaTeX fragments in the current buffer.
-Works with both org 9.6+ (`org-latex-preview') and older (`org-preview-latex-fragment')."
   (when (display-graphic-p)
     (cond ((fboundp 'org-latex-preview)
            (org-latex-preview '(16)))
@@ -229,22 +227,24 @@ Works with both org 9.6+ (`org-latex-preview') and older (`org-preview-latex-fra
 
 (defun andy/org-study/start-study ()
   (interactive)
-  (let ((files (andy/org-file/get-all-org-files-from-directory-recursively org-directory)))
+  (let ((files (andy/file-api/get-files
+		org-directory
+		:file-extensions '("org")
+		:recursive t))
+	(collected nil))
     (dolist (f files) 
       (with-current-buffer (find-file-noselect f) 
         (org-map-entries 
          (lambda () 
-           ;; Check for flashcard types BEFORE creating properties or IDs
            (when (andy/org-study/get-flashcard-types-on-heading-at-point)
              (andy/org-study/create-properties) 
              (andy/org-study/delete-properties))) 
          nil 'file) 
-        (save-buffer))))
+        (save-buffer)))
   (org-id-update-id-locations)
-  (let ((files (andy/org-file/get-all-org-files-from-directory-recursively org-directory)) (collected '()))
-    (dolist (f files) (setq collected (append collected (andy/org-study/get-flashcards-in-org-file f))))
-    (setq due-flashcards (andy/org-study/shuffle-list collected))
-    (andy/org-study/display-flashcard-question)))
+  (dolist (f files) (setq collected (append collected (andy/org-study/get-flashcards-in-org-file f))))
+  (setq due-flashcards (andy/org-study/shuffle-list collected))
+  (andy/org-study/display-flashcard-question)))
 
 ;; --- Helper Functions ---
 

@@ -25,7 +25,7 @@
 (global-visual-line-mode 1)
 (tool-bar-mode -1)
 
-(set-face-attribute 'default nil :height 180)
+(set-face-attribute 'default nil :height 160)
 (set-frame-parameter nil 'fullscreen 'maximized)
 
 ;;; Org mode
