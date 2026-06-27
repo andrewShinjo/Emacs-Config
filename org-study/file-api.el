@@ -1,6 +1,8 @@
 ;;; file-api.el
 
-(defun andy/file-api/get-files (dir
+(eval-when-compile (require 'cl-lib))
+
+(cl-defun andy/file-api/get-files (dir
                                 &key
                                 file-extensions
                                 (exclude-hidden t)
