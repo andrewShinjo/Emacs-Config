@@ -56,24 +56,26 @@
          (all-headings
           (cl-mapcan
            (lambda (org-file)
-             (with-current-buffer (find-file-noselect org-file)
-               (org-map-entries
-                (lambda ()
-		  (let ((p (point))
-			(id (org-id-get (point) 'create))
-			(text (org-get-heading 'no-todo 'no-tags))
-			(review-due (or (org-entry-get (point) REVIEW-DUE-PROPERTY) (format-time-string "%Y-%m-%d")))
-			(review-increment (or (org-entry-get (point) REVIEW-INCREMENT-PROPERTY "4")))
-			(tags (org-get-tags nil t)))
-                  (make-heading
-                   :file org-file
-                   :id id
-		   :text text
-                   :review-due review-due
-		   :review-increment review-increment
-                   :tags tags))
-		t 'file (string-join REVIEW-TAGS "|"))))
-           all-files)))
+             (let ((create-lockfiles nil))
+               (with-current-buffer (find-file-noselect org-file)
+                 (org-map-entries
+                  (lambda ()
+                    (let ((p (point))
+                          (id (org-id-get (point) 'create))
+                          (text (org-get-heading 'no-todo 'no-tags))
+                          (review-due (or (org-entry-get (point) REVIEW-DUE-PROPERTY) (format-time-string "%Y-%m-%d")))
+                          (review-increment (or (org-entry-get (point) REVIEW-INCREMENT-PROPERTY) "4"))
+                          (tags (org-get-tags nil t)))
+                      (make-heading
+                       :file org-file
+                       :id id
+                       :text text
+                       :review-due review-due
+                       :review-increment review-increment
+                       :tags tags)))
+                  (string-join REVIEW-TAGS "|")
+                    'file))))
+            all-files))
 
          (headings-filtered-by-due
           (cl-remove-if-not

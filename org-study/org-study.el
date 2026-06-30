@@ -114,7 +114,8 @@
                         (time-add (current-time) (days-to-time interval)))))
 
 (defun andy/org-study/get-flashcards-in-org-file (org-file)
-  (with-current-buffer (find-file-noselect org-file)
+  (let ((create-lockfiles nil))
+    (with-current-buffer (find-file-noselect org-file)
     (let ((all-flashcards '())
           (now (current-time)))
       (org-map-entries
@@ -129,7 +130,7 @@
                      (setq all-flashcards
                            (nconc (cl-copy-list result) all-flashcards)))))))))
        nil 'file)
-      (nreverse all-flashcards))))
+      (nreverse all-flashcards)))))
 
 (defun andy/org-study/delete-properties ()
   (let ((types (andy/org-study/get-flashcard-types-on-heading-at-point)))
@@ -218,7 +219,7 @@ Must be called from the original org buffer with point at the heading."
         (flashcard-mode)
         (if (not flashcard)
             (insert "Done with flashcards.")
-          (insert (format "Flashcards remaining: %d\n\n" (length due-flashcards)))
+          (insert (format "Flashcards remaining: %d\n" (length due-flashcards)))
           (insert (plist-get flashcard :question))
           (insert "\n\n" "Show answer: [SPC]")
           (org-display-inline-images t t)
@@ -233,14 +234,15 @@ Must be called from the original org buffer with point at the heading."
 		:recursive t))
 	(collected nil))
     (dolist (f files) 
-      (with-current-buffer (find-file-noselect f) 
-        (org-map-entries 
-         (lambda () 
-           (when (andy/org-study/get-flashcard-types-on-heading-at-point)
-             (andy/org-study/create-properties) 
-             (andy/org-study/delete-properties))) 
-         nil 'file) 
-        (save-buffer)))
+      (let ((create-lockfiles nil))
+        (with-current-buffer (find-file-noselect f) 
+          (org-map-entries 
+           (lambda () 
+             (when (andy/org-study/get-flashcard-types-on-heading-at-point)
+               (andy/org-study/create-properties) 
+               (andy/org-study/delete-properties))) 
+           nil 'file) 
+          (save-buffer))))
   (org-id-update-id-locations)
   (dolist (f files) (setq collected (append collected (andy/org-study/get-flashcards-in-org-file f))))
   (setq due-flashcards (andy/org-study/shuffle-list collected))

@@ -21,25 +21,22 @@
 
 (defun andy/org-study/get-question-context-at-point ()
   (save-excursion
-    (let ((ctx nil))
+    (let ((ctx nil)
+          (parents nil))
       (when-let ((title (andy/org-study/get-title-at-point)))
-        (push (format "#+title: %s" title) ctx)
-        (push "" ctx))
+        (push (format "#+title: %s" title) ctx))
       (org-back-to-heading t)
       (let ((level (org-outline-level)))
         (while (> level 1)
           (when (re-search-backward "^\\*+ " nil t)
             (let ((found-level (org-outline-level)))
               (when (< found-level level)
-                (push (concat
-                       (make-string found-level ?*)
-                       " "
-                       (org-get-heading 'no-todo 'no-tags)
-                       "\n"
-                       (andy/org-study/expand-attachment-links (andy/org-heading-at-point/get-body-text)))
-                      ctx)
+                 (let* ((body (andy/org-study/expand-attachment-links (andy/org-heading-at-point/get-body-text)))
+                        (heading (concat (make-string found-level ?*) " " (org-get-heading 'no-todo 'no-tags)
+                                         (if (string-empty-p body) "" (concat "\n" body)))))
+                   (push heading parents))
                 (setq level found-level)))))
-        (string-join (reverse ctx) "\n")))))
+        (string-join (append ctx parents) "\n")))))
 
 (defun andy/org-study/get-title-at-point ()
   (save-excursion
